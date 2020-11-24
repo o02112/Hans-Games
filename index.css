@@ -1,0 +1,16 @@
+body {
+  background-color: #313131;
+}
+
+#stage {
+  margin: 0 auto;
+  width: 396px;
+  border: 1px solid #777;
+  color: #999;
+  line-height: 15px;
+  letter-spacing: -0.8px;
+  padding: 1px 2px 3px;
+  word-wrap: break-word;
+  word-break: break-all;
+  font-family: "Microsoft Yahei"
+}
