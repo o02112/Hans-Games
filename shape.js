@@ -4,26 +4,54 @@ export default class Shape {
 
   offsetX = 0;
   offsetY = 0;
-  currentRotationBinaryData = [];
-  nextRotationBinaryData = [];
+  currentBinaryData = [];
   originCoordinate = [];
-  currentCoordinate = [];
+  currentCoordinates = [];
 
   constructor({ offsetX=0, offsetY=0 }) {
 
-    this.currentRotationBinaryData = this.getRandomBinary();
-    this.nextRotationBinaryData = this.rotateBinary();
-    this.generateCoordinateFromBinary();
-    this.applyTransform({ offsetX, offsetY });
+    const binaryData = this.getRandomBinary();
+    const coordinates = this.getCoordinatefromBinaryData({ binaryData, offsetX, offsetY })
 
+    this.applyTransform({ binaryData, coordinates, offsetX, offsetY });
+  }
+
+  get nextRotationCoordinates() {
+    const binaryData = this.rotateBinary();
+    const coordinates = this.getCoordinatefromBinaryData({ binaryData })
+
+    return { binaryData, coordinates }
   }
 
   rotate() {
-    this.currentRotationBinaryData = this.nextRotationBinaryData;
-    this.generateCoordinateFromBinary();
-    this.applyTransform();
+    this.applyTransform(this.nextRotationCoordinates);
+  }
 
-    this.nextRotationBinaryData = this.rotateBinary();
+  applyTransform({
+    binaryData = this.currentBinaryData,
+    coordinates = this.currentCoordinates,
+    offsetX=0,
+    offsetY=0,
+  }={}) {
+    this.currentBinaryData = binaryData;
+    this.currentCoordinates = coordinates;
+    this.offsetX += offsetX;
+    this.offsetY += offsetY;
+  }
+
+  getCoordinatefromBinaryData({
+    binaryData,
+    offsetX=this.offsetX,
+    offsetY=this.offsetY,
+  }) {
+    const coordinates = this.generateCoordinateFromBinary(binaryData);
+    const coordinatesResult = this.transformCoordinates({
+      coordinates,
+      offsetX,
+      offsetY,
+    });
+
+    return coordinatesResult;
   }
 
   getRandomBinary() {
@@ -37,7 +65,7 @@ export default class Shape {
   }
 
 
-  rotateBinary(shape=this.currentRotationBinaryData, times = 1) {
+  rotateBinary(shape=this.currentBinaryData, times = 1) {
     const shapeRows = shape.length;
     const resultArr = [];
 
@@ -57,7 +85,7 @@ export default class Shape {
   }
 
   // 生成一个自适应的坐标结果，使其在做“旋转”变换时更优雅
-  generateCoordinateFromBinary(binaryData=this.currentRotationBinaryData) {
+  generateCoordinateFromBinary(binaryData=this.currentBinaryData) {
     const coordinateArray = [];
 
     const shapeHeightCenter = Math.floor(binaryData.length / 2);
@@ -70,27 +98,20 @@ export default class Shape {
         }
       }
     }
-    this.originCoordinate = coordinateArray;
+    return coordinateArray;
   }
 
-  applyTransform({ offsetX=0, offsetY=0 }={}) {
-    const coordinates = this.getNewCoordinates({offsetX, offsetY});
-    this.offsetX += offsetX;
-    this.offsetY += offsetY;
-    this.currentCoordinate = coordinates;
-  }
-
-  getNewCoordinates({ offsetX=0, offsetY=0 }) {
-    let absX = this.offsetX + offsetX;
-    let absY = this.offsetY + offsetY;
+  transformCoordinates({ coordinates=this.currentCoordinates, offsetX=0, offsetY=0 }) {
+    // let absX = this.offsetX + offsetX;
+    // let absY = this.offsetY + offsetY;
 
     let resultCoordinate = [];
-    for(let coor of this.originCoordinate) {
+    for(let coor of coordinates) {
       let [x, y] = coor.split(',');
       x = parseInt(x);
       y = parseInt(y);
-      x += parseInt(absX);
-      y += parseInt(absY);
+      x += parseInt(offsetX);
+      y += parseInt(offsetY);
       resultCoordinate.push(`${x},${y}`);
     }
     return resultCoordinate;

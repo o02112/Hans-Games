@@ -23,6 +23,7 @@ export default class GameBase {
   KEY_CODE_LEFT = 'a';
   KEY_CODE_RIGHT = 'd';
   KEY_CODE_ATTACK = 'j';
+  stopKeydownInterval = false;
 
   constructor() {
 
@@ -100,13 +101,13 @@ export default class GameBase {
     startButton.onclick = () => { this.start(); }
     pauseButton.onclick = () => { this.pause(); }
 
-    upButton.onclick = () => this.handleKeyDown({code: this.KEY_CODE_UP});
-    rightButton.onclick = () => this.handleKeyDown({code: this.KEY_CODE_RIGHT});
-    downButton.onclick = () => this.handleKeyDown({code: this.KEY_CODE_DOWN});
-    leftButton.onclick = () => this.handleKeyDown({code: this.KEY_CODE_LEFT});
-    attackButton.onclick = () => this.handleKeyDown({code: this.KEY_CODE_ATTACK});
+    upButton.onclick = () => this.runAction(this.KEY_CODE_UP);
+    rightButton.onclick = () => this.runAction(this.KEY_CODE_RIGHT);
+    downButton.onclick = () => this.runAction(this.KEY_CODE_DOWN);
+    leftButton.onclick = () => this.runAction(this.KEY_CODE_LEFT);
+    attackButton.onclick = () => this.runAction(this.KEY_CODE_ATTACK);
 
-    window.onkeydown = e => this.handleKeyDown({code: e.key});
+    window.onkeypress = e => this.handleKeyDown({code: e.key});
     window.onkeyup = e => this.handleKeyUp({code: e.key});
   }
 
@@ -117,6 +118,7 @@ export default class GameBase {
     intervalDelay = this.keyDownIntervalDelay,
     timeoutDelay = this.keyDownTimeoutDelay,
   }={}) {
+    if(this.stopKeydownInterval) return;
     if(this.status !== this.STATUS_PLAYING) return;
     if(code === this.KEY_CODE_ATTACK) {
       this.runAction(code);
@@ -138,6 +140,8 @@ export default class GameBase {
   }
 
   handleKeyUp({code=''}={}) {
+    this.stopKeydownInterval = false;
+
     if(this.keyDownTimeout[code]) {
       clearTimeout(this.keyDownTimeout[code]);
       delete this.keyDownTimeout[code];
@@ -148,6 +152,7 @@ export default class GameBase {
       delete this.keyDownInterval[code];
     }
   }
+
 
   runAction(key='') {
     switch(key) {
@@ -160,7 +165,17 @@ export default class GameBase {
     }
   }
 
-  outOfBounds(coordinates=[]) {
+  checkoutOverlapping(coordinatesA=[], coordinatesB=[]) {
+    for(let coorA of coordinatesA) {
+      if(coordinatesB.indexOf(coorA) !== -1) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  checkOutOfBounds(coordinates=[]) {
     let
       xs = [],
       ys = [],
