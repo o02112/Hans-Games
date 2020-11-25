@@ -2,8 +2,8 @@ export default class GameBase {
 
 
   stage;
-  width = 26;
-  height = 35;
+  width = 24;
+  height = 36;
   STATUS_PLAYING = 'PLAYING';
   STATUS_PAUSING = 'PAUSING';
   STATUS_INIT = 'INIT';

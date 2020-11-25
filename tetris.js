@@ -70,9 +70,44 @@ export default class Tetris extends GameBase {
   activeShapeSet() {
     this.fixedShapeCoordinate = this.activeShape.currentCoordinates.concat(this.fixedShapeCoordinate);
     delete this.activeShape;
-    
+
+    this.recycleRows();
+
     this.handleKeyUp({ code: this.KEY_CODE_DOWN });
     this.stopKeydownInterval = true;
+  }
+
+  recycleRows() {
+    const coordinates = this.fixedShapeCoordinate;
+    const newFixedShapeCoordinate = [];
+    const xs = {};
+    const fullRows = [];
+
+    for(const point of coordinates) {
+      const [x, y] = point.split(',');
+      if(!xs[y]) xs[y] = [];
+      xs[y].push(x);
+    }
+    for(const key in xs) {
+      if(xs[key].length === this.width) fullRows.push(key);
+    }
+
+    if(fullRows.length === 0) return;
+    for(const point of coordinates) {
+      let [x, y] = point.split(',');
+      let fallDownOffsetY = 0;
+      if(fullRows.indexOf(y) === -1) {
+        y = parseInt(y);
+        fullRows.map(rowNum => {
+          if(parseInt(rowNum) > y) fallDownOffsetY ++;
+        });
+
+        newFixedShapeCoordinate.push(`${x},${y+fallDownOffsetY}`)
+      }
+    }
+
+    this.fixedShapeCoordinate = newFixedShapeCoordinate;
+    // this.generateOutput();
   }
 
   moveActiveShape({ offsetX=0, offsetY=0 }) {
